@@ -1,0 +1,28 @@
+---
+title: "Peer-Graded Assigntment Course Project 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r get_data, include=FALSE, cache=TRUE}
+
+if(!file.exists("StormData.csv.bz2")){
+  
+    file <- download.file(url, destfile = "./StormData.csv.bz2", method = "curl")
+    return(file)
+}
+
+  df <- read.csv(bzfile("stormdata.csv.bz2"))
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
