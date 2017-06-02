@@ -5,7 +5,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
+library(ggplot2)
+library(dplyr)
 ```
 
 
@@ -15,6 +16,7 @@ You can also embed plots, for example:
 
 ```{r get_data, include=FALSE, cache=TRUE}
 
+url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
 if(!file.exists("StormData.csv.bz2")){
   
     file <- download.file(url, destfile = "./StormData.csv.bz2", method = "curl")
@@ -25,4 +27,10 @@ if(!file.exists("StormData.csv.bz2")){
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r analyze, include=TRUE,echo = TRUE,cache=FALSE}
+
+dim(df)
+
+```
