@@ -1,5 +1,6 @@
 
 library(dplyr)
+library(ggplot2)
 download_file <- function(){
   url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
   if(!file.exists("StormData.csv.bz2")){
@@ -29,7 +30,7 @@ df_dated <- filter(df_variables, BGN_DATE >= "1996-01-01")
 ######################
 ############### Exponetials
 
-K <- 100000
+K <- 1000
 M <-1000000
 B <- 1000000000
 zero <-  10
@@ -127,13 +128,59 @@ for(x in df_grouped_types$EVTYPE){
   i <- i + 1
 }
   
-# df_two <- group_by(df_grouped_types,EventTypeCons)  %>% summarize(freq = length(EVTYPE),
-#                                                                   FATALITIES = sum(FATALITIES),
-#                                                                   INJURIES = sum(INJURIES),
-#                                                                   TotalCropDamage = sum(TotalCropDamage),
-#                                                                   TotalPropDamage = sum(TotalPropDamage),
-#                                                                   TotalMonetaryDamage = sum(TotalMonetaryDamage)
-#                                                                   
-#                                                                   ) %>% arrange(desc(freq))
-#   
+df_last <- group_by(df_grouped_types,EventTypeCons)  %>% summarize(
+                                                                  FATALITIES = sum(FATALITIES),
+                                                                   INJURIES = sum(INJURIES),
+                                                                   TotalCropDamage = sum(TotalCropDamage),
+                                                                   TotalPropDamage = sum(TotalPropDamage),
+                                                                   TotalMonetaryDamage = sum(TotalMonetaryDamage)
+                                                                   
+                                                                   ) %>% arrange(desc(FATALITIES)) %>% filter(EventTypeCons != "NO NAME")  
   
+check_table <- function(df){ #### USE      df_grouped_types AS PARAMETER
+  
+  df_names <- filter(df,EventTypeCons != "NO NAME")
+  df_N0_names <- filter(df,EventTypeCons == "NO NAME")
+  
+  
+  df_name_FATALITIES <-df_names$FATALITIES
+  df_name_INJURIES <-df_names$INJURIES
+  df_name_TotalCropDamage <-df_names$TotalCropDamage
+  df_name_TotalPropDamage<-df_names$TotalPropDamage
+  df_name_TotalMonetaryDamage<-df_names$TotalMonetaryDamage
+
+  df_N0_names_FATALITIES <-df_N0_names$FATALITIES
+  df_N0_names_INJURIES <-df_N0_names$INJURIES
+  df_N0_names_TotalCropDamage <-df_N0_names$TotalCropDamage
+  df_N0_names_TotalPropDamage<-df_N0_names$TotalPropDamage
+  df_N0_names_TotalMonetaryDamage<-df_N0_names$TotalMonetaryDamage
+  
+  # ####### fatalities
+   fatalities_sum <- sum(df_name_FATALITIES) + sum(df_N0_names_FATALITIES)
+   fatalities_percentage <- c((sum(df_name_FATALITIES)/fatalities_sum)*100,(sum(df_N0_names_FATALITIES)/fatalities_sum)*100)
+   
+   
+   # ####### injuries
+   injuries_sum <- sum(df_name_INJURIES) + sum(df_N0_names_INJURIES)
+   injuries_percentage <- c((sum(df_name_INJURIES)/injuries_sum)*100,(sum(df_N0_names_INJURIES)/injuries_sum)*100)
+   
+   
+   # ####### totalCrop
+   crop_sum <- sum(df_name_TotalCropDamage) + sum(df_N0_names_TotalCropDamage)
+   crop_percentage <- c((sum(df_name_TotalCropDamage)/crop_sum)*100,(sum(df_N0_names_TotalCropDamage)/crop_sum)*100)
+   
+   
+   # ####### totalProperty
+   prop_sum <- sum(df_name_TotalPropDamage) + sum(df_N0_names_TotalPropDamage)
+   prop_percentage <- c((sum(df_name_TotalPropDamage)/prop_sum)*100,(sum(df_N0_names_TotalPropDamage)/prop_sum)*100)
+   
+   
+   # ####### totalMonetary
+   monetary_sum <- sum(df_name_TotalMonetaryDamage) + sum(df_N0_names_TotalMonetaryDamage)
+   monetary_percentage <- c((sum(df_name_TotalMonetaryDamage)/monetary_sum)*100,(sum(df_N0_names_TotalMonetaryDamage)/monetary_sum)*100)
+   
+   my_list <- list(fatalities_percentage,injuries_percentage,crop_percentage,prop_percentage,monetary_percentage)
+   names(my_list) <- c("fatalities","injuries","totalCrop","totalProperty","totalMonetary")
+   my_list
+}
+
