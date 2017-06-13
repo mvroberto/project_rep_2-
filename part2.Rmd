@@ -166,6 +166,7 @@ for(x in df_grouped_types$EVTYPE){
 }
   
 df_last <- group_by(df_grouped_types,EventTypeCons)  %>% summarize(
+                                                                  freq = sum(freq),
                                                                   FATALITIES = sum(FATALITIES),
                                                                    INJURIES = sum(INJURIES),
                                                                    TotalCropDamage = sum(TotalCropDamage),
@@ -179,9 +180,76 @@ df_last <- group_by(df_grouped_types,EventTypeCons)  %>% summarize(
 ```
 
 
+### Understanding Deaths and Injuries
 
-```{r analyze, include=TRUE,echo = TRUE,cache=FALSE}
 
-dim(df)
+```{r total_injuries_fatalities, include=TRUE,echo = TRUE,cache=FALSE}
+
+ df_injuries_fatalities <- filter(df_last, FATALITIES > 0 && INJURIES > 0)
+
+
+fatalities <- df_injuries_fatalities$FATALITIES
+quantile_fatalities <- quantile(fatalities,.8)
+injurires<- df_injuries_fatalities$INJURIES
+quantile_injurires <-quantile(injurires,.8)
+ df_injuries_fatalities <- filter(df_last, FATALITIES > quantile_fatalities,INJURIES > quantile_injurires)
+
+ a <- ggplot(df_injuries_fatalities, aes(INJURIES,FATALITIES))
+ plot <- a + geom_point(aes(color =  df_injuries_fatalities$EventTypeCons))
+ plot
+ print(df_injuries_fatalities)
+```
+
+
+
+### Understanding Economic Damage
+
+Economic Danamage is the sum of Crop Damage plus Property Damage.
+
+```{r total_Economic_Damage, include=TRUE,echo = TRUE,cache=FALSE}
+
+
+df_economic_damage <- filter(df_last, TotalCropDamage > 0 && TotalPropDamage > 0)
+
+
+crop_damage <- df_economic_damage$TotalCropDamage
+quantile_crop_damage <- quantile(crop_damage,.8)
+prop_damage<- df_economic_damage$TotalPropDamage
+quantile_prop_damage <-quantile(prop_damage,.8)
+
+df_economic_damage <- filter(df_economic_damage, TotalCropDamage > quantile_crop_damage,TotalPropDamage > quantile_prop_damage) %>% mutate(crop_millions = TotalCropDamage / 1000000, prop_millions = TotalPropDamage / 1000000, total_damage_millions =  TotalMonetaryDamage/1000000) %>% select(EventTypeCons,FATALITIES,INJURIES,crop_millions,prop_millions,total_damage_millions)
+
+a <- ggplot(df_economic_damage, aes(crop_millions,prop_millions))
+plot <- a + geom_point(aes(color =  df_economic_damage$EventTypeCons))
+
+print(df_economic_damage)
+plot
+names(df_last)
+
+```
+
+
+### Total Damage Per Event
+
+The next table takes in consideration the number of Fatalities, Injuries and Total Damage (Crop and Propertary in millions USD) per event sicen 1996. 
+
+
+```{r last_graph, include=TRUE,echo = TRUE,cache=FALSE}
+ df_per_event <- mutate(df_last, fatalities_per_event = FATALITIES/freq,injuries_per_event = INJURIES/freq, damage_per_event = TotalMonetaryDamage/freq )
+
+fatalities_event <- df_per_event$fatalities_per_event
+ injuries_event <- df_per_event$injuries_per_event
+ damage_event <- df_per_event$damage_per_event
+
+ quantile_fatalities_event <-  quantile(fatalities_event,.5)
+ quantile_injuries_event <-  quantile(injuries_event,.5)
+ quantile_damage_event <-  quantile(damage_event,.5)
+ df_frequency <- filter(df_per_event, fatalities_per_event > quantile_fatalities_event,injuries_per_event > quantile_injuries_event,damage_per_event > quantile_damage_event) %>% mutate(damageEvent_Millions = damage_per_event/1000000) %>% select(EventTypeCons,freq,fatalities_per_event,injuries_per_event,damageEvent_Millions)
+
+ a <- ggplot(df_frequency, aes(injuries_per_event,fatalities_per_event,damage_per_event))
+ plot <-  a + geom_point(aes(size = damage_per_event, color =  df_frequency$EventTypeCons))
+
+ print(df_frequency)
+ 
 
 ```
